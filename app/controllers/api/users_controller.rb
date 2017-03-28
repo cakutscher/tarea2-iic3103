@@ -1,8 +1,26 @@
 class Api::UsersController < ApplicationController
   protect_from_forgery with: :null_session
 
+  def index
+    users = User.all
+    #c = users.count
+
+    #render json: { 'usuarios' => { users.each do |hola| hola.to_json(:except => ['created_at', 'updated_at']) } }
+
+
+
+
+  end
+
+
   def show
-    render json: User.find(params[:id]), status: 201
+    user = User.find(params[:id]) rescue nil
+    if user
+      render json: user, status: 201
+    else
+      render json: { errors: "Usuario no encontrado"}, status: 404
+      ##manejar con handler errors ActiveRecord::RecordNotFound
+    end
   end
 
   def create
@@ -11,18 +29,31 @@ class Api::UsersController < ApplicationController
       if user.save
         render json: user, status: 201
       else
-        render json: { errors: user.errors}, status: 422
+        #render json: { errors: user.errors}, status: 422
+        render json: { errors: "La creacion ha fallado"}, status: 500
       end
     end
 
     # Updating users
     def update
-      user = User.find(params[:id])
-      if user.update(user_params)
-        render json: user, status: 200
+
+      #primero revisar si el usuario existe.
+      #error si se modifica el id
+      current_query_string = URI(request.url).query  ##el problema es que no se prueba con url. 
+      if current_query_string.include? "id"
+        render json: { errors: 'id no es modificable' }, status: 400
       else
-        render json: { errors: user.errors }, status: 422
+        user = User.find(params[:id])
+        if user.update(user_params)
+          render json: user, status: 200
+        else
+          render json: { errors: user.errors }, status: 422
+        end
+
       end
+
+
+
     end
 
     # Deleting users
