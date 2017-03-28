@@ -3,69 +3,78 @@ class Api::UsersController < ApplicationController
 
   def index
     users = User.all
+    render json: users
+    #agregar usuarios
     #c = users.count
-
     #render json: { 'usuarios' => { users.each do |hola| hola.to_json(:except => ['created_at', 'updated_at']) } }
-
-
-
 
   end
 
 
   def show
-    user = User.find(params[:id]) rescue nil
-    if user
+    begin
+      user = User.find(params[:id])
       render json: user, status: 201
-    else
-      render json: { errors: "Usuario no encontrado"}, status: 404
-      ##manejar con handler errors ActiveRecord::RecordNotFound
     end
   end
 
-  def create
-    user=User.new(user_params)
-      # if the user is saved successfully than respond with json data and status code 201
-      if user.save
-        render json: user, status: 201
-      else
-        #render json: { errors: user.errors}, status: 422
-        render json: { errors: "La creacion ha fallado"}, status: 500
-      end
+   def create
+     begin
+       user=User.new(user_params)
+       body_request = request.raw_post
+       if body_request.include? '"id"'
+        render json: { error: "No se puede crear usuario con id"}, status: 400
+       else
+        if user.save
+          render json: user, status: 201
+        else
+          #render json: { error: "La creacion ha fallado"}, status: :internal_server_error
+          render json: { error: "La creacion ha fallado"}, status: 500
+        end
+       end
+     end
     end
 
     # Updating users
     def update
-
-      #primero revisar si el usuario existe.
-      #error si se modifica el id
-      current_query_string = URI(request.url).query  ##el problema es que no se prueba con url. 
-      if current_query_string.include? "id"
-        render json: { errors: 'id no es modificable' }, status: 400
-      else
+      begin
+        #begin para hacer catching exceptions. Bloque. Se sale cuando se llega a una exepcion
+        #En ApplicationController se define ActiveRecord::Not found
         user = User.find(params[:id])
-        if user.update(user_params)
-          render json: user, status: 200
+        body_request = request.raw_post
+        if body_request.include? '"id"'
+          render_400
         else
-          render json: { errors: user.errors }, status: 422
+          user = User.find(params[:id])
+          if user.update(user_params)
+            render json: user, status: 200
+            # else error 500 esta manejado implicitamente. corroborar
+          end
         end
-
       end
-
-
-
     end
 
     # Deleting users
     def destroy
       user = User.find(params[:id])
       user.destroy
-      head 204
     end
 
     private
     def user_params
       params.require(:user).permit(:usuario, :nombre, :apellido, :twitter)
+    end
+
+    def render_400
+      render json: { error: "id no es modificable"}, status: 400
+    end
+
+    def render_404
+        render json: { error: "Usuario no encontrado"}, status: 404
+    end
+
+    def render_500
+      render json: { error: "La modificación ha fallado"}, status: 500
     end
 
 end
