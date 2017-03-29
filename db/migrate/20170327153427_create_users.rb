@@ -6,7 +6,6 @@ class CreateUsers < ActiveRecord::Migration[5.0]
       t.string :apellido
       t.string :twitter
 
-      t.timestamps
     end
   end
 end

@@ -3,11 +3,7 @@ class Api::UsersController < ApplicationController
 
   def index
     users = User.all
-    render json: users
-    #agregar usuarios
-    #c = users.count
-    #render json: { 'usuarios' => { users.each do |hola| hola.to_json(:except => ['created_at', 'updated_at']) } }
-
+    render json: { 'usuarios' => users}.merge('total' => users.count)
   end
 
 
