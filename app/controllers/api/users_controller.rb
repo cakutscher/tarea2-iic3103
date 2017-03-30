@@ -3,14 +3,14 @@ class Api::UsersController < ApplicationController
 
   def index
     users = User.all
-    render json: { 'usuarios' => users}.merge('total' => users.count)
+    render json: { 'usuarios' => users,'total' => users.count}
   end
 
 
   def show
     begin
       user = User.find(params[:id])
-      render json: user, status: 201
+      render json: user, status: 200
     end
   end
 
