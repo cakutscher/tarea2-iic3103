@@ -44,7 +44,9 @@ class Api::UsersController < ApplicationController
           user = User.find(params[:id])
           if user.update(user_params)
             render json: user, status: 200
-            # else error 500 esta manejado implicitamente. corroborar
+          else
+            render_500
+            # else error 500 esta manejado implicitamente. corroborar NO
           end
         end
       end
