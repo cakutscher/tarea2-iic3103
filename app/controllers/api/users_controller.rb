@@ -1,5 +1,5 @@
 class Api::UsersController < ApplicationController
-  protect_from_forgery with: :null_session prepend: true
+  protect_from_forgery prepend: true
   skip_before_filter :verify_authenticity_token
 
   def index
