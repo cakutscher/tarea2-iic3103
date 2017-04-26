@@ -1,5 +1,6 @@
 class Api::UsersController < ApplicationController
   protect_from_forgery with: :null_session
+  skip_before_action :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
 
   def index
     users = User.all
@@ -18,8 +19,6 @@ class Api::UsersController < ApplicationController
      begin
        user=User.new(user_params)
        body_request = request.raw_post
-       puts 'aisjdaskdmaksmdlkasmdlkamsdlkasmdklasmkdlmasklda'
-       puts body_request
        if body_request.include? '"id"'
         render json: { error: "No se puede crear usuario con id"}, status: 400
        else
